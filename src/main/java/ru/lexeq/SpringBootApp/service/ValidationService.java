@@ -6,6 +6,7 @@ import ru.lexeq.SpringBootApp.exception.UnsupportedCodeException;
 import ru.lexeq.SpringBootApp.exception.ValidationFailedException;
 import ru.lexeq.SpringBootApp.model.Request;
 
+
 @Service
 public interface ValidationService {
     void isValid(BindingResult bindingResult, Request request)
