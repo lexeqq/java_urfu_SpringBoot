@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.lexeq.SpringBootApp.exception.UnsupportedCodeException;
 import ru.lexeq.SpringBootApp.exception.ValidationFailedException;
 import ru.lexeq.SpringBootApp.model.*;
+import ru.lexeq.SpringBootApp.service.ModifyRequestService;
 import ru.lexeq.SpringBootApp.service.ModifyResponseService;
 import ru.lexeq.SpringBootApp.service.ValidationService;
 import ru.lexeq.SpringBootApp.util.DateTimeUtil;
@@ -26,18 +27,27 @@ public class MyController {
 
     private final ModifyResponseService modifyResponseService;
 
+    private final ModifyRequestService modifyRequestService;
+
     @Autowired
     public  MyController(ValidationService validationService,
-                         @Qualifier("ModifySystemTimeResponseService") ModifyResponseService modifyResponseService) {
+                         @Qualifier("ModifySystemTimeResponseService") ModifyResponseService modifyResponseService, ModifyRequestService modifyRequestService) {
         this.validationService = validationService;
         this.modifyResponseService = modifyResponseService;
+        this.modifyRequestService = modifyRequestService;
     }
 
     @PostMapping(value = "/feedback")
     public ResponseEntity<Response> feedback(@Valid @RequestBody Request request,
                                              BindingResult bindingResult) {
 
+        // время получения запроса в текущем сервисе
+        String service1RequestTime = DateTimeUtil.getCustomFormat().format(new Date());
+        request.setService1RequestTime(service1RequestTime);
+
+        request.setSystemTime(DateTimeUtil.getCustomFormat().format(new Date()));
         log.info("request: {}", request);
+
 
         Response response = Response.builder()
                 .uid(request.getUid())
@@ -72,6 +82,7 @@ public class MyController {
         }
 
         modifyResponseService.modify(response);
+        modifyRequestService.modify(request);
         log.info("Final successful response: {}", response);
 
         return new ResponseEntity<>(response, HttpStatus.OK);

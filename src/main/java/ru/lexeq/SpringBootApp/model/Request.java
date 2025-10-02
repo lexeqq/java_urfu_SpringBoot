@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.lexeq.SpringBootApp.util.DateTimeUtil;
 
 @Data
 @Builder
@@ -29,6 +30,9 @@ public class Request {
     private String systemTime;
     private String source;
 
+    // Поле для передачи времени получения запроса
+    private String service1RequestTime;
+
 
     // Диапазон валидных значений
     @Min(value = 1)
@@ -47,6 +51,7 @@ public class Request {
                 ", systemName= " + systemName + '\'' +
                 ", systemTime= " + systemTime + '\'' +
                 ", source= " + source + '\'' +
+                ", service1RequestTime= " + service1RequestTime + '\'' +
                 ", communicationId= " + communicationId +
                 ", templateId= " + templateId +
                 ", productCode= " + productCode +
