@@ -33,15 +33,25 @@ public class Request {
     // Поле для передачи времени получения запроса
     private String service1RequestTime;
 
+    // Доработка с 5 лабы
+    // Позиция
+    private Positions position;
+    // Зарплата
+    private Double salary;
+    // Бонус
+    private Double bonus;
+    // Рабочие дни
+    private Integer workDays;
+
 
     // Диапазон валидных значений
     @Min(value = 1)
     @Max(value = 100000)
-    private int communicationId;
+    private Integer communicationId;
 
-    private int templateId;
-    private int productCode;
-    private int smsCode;
+    private Integer templateId;
+    private Integer productCode;
+    private Integer smsCode;
 
     @Override
     public String toString() {

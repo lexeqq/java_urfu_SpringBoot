@@ -13,9 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.lexeq.SpringBootApp.exception.UnsupportedCodeException;
 import ru.lexeq.SpringBootApp.exception.ValidationFailedException;
 import ru.lexeq.SpringBootApp.model.*;
-import ru.lexeq.SpringBootApp.service.ModifyRequestService;
-import ru.lexeq.SpringBootApp.service.ModifyResponseService;
-import ru.lexeq.SpringBootApp.service.ValidationService;
+import ru.lexeq.SpringBootApp.service.*;
 import ru.lexeq.SpringBootApp.util.DateTimeUtil;
 import java.util.Date;
 
@@ -29,12 +27,18 @@ public class MyController {
 
     private final ModifyRequestService modifyRequestService;
 
+    private final BonusService bonusService;
+
     @Autowired
     public  MyController(ValidationService validationService,
-                         @Qualifier("ModifySystemTimeResponseService") ModifyResponseService modifyResponseService, ModifyRequestService modifyRequestService) {
+                         @Qualifier("ModifySystemTimeResponseService")
+                         ModifyResponseService modifyResponseService,
+                         ModifyRequestService modifyRequestService,
+                         BonusService bonusService) {
         this.validationService = validationService;
         this.modifyResponseService = modifyResponseService;
         this.modifyRequestService = modifyRequestService;
+        this.bonusService = bonusService;
     }
 
     @PostMapping(value = "/feedback")
@@ -48,7 +52,6 @@ public class MyController {
         request.setSystemTime(DateTimeUtil.getCustomFormat().format(new Date()));
         log.info("request: {}", request);
 
-
         Response response = Response.builder()
                 .uid(request.getUid())
                 .operationUid(request.getOperationUid())
@@ -61,6 +64,34 @@ public class MyController {
 
         try {
             validationService.isValid(bindingResult, request);
+            // bonusService для расчета
+            if (request.getPosition() != null
+                    && request.getSalary() != null
+                    && request.getBonus() != null
+                    && request.getWorkDays() != null
+            ) {
+                double annualBonus = bonusService.calculate( // Вызов через bonusService
+                        request.getPosition(),
+                        request.getSalary(),
+                        request.getBonus(),
+                        request.getWorkDays()
+                );
+                response.setAnnualBonus(annualBonus);
+
+                // Расчет квартальной премии
+                try {
+                    double quarterBonus = bonusService.calculateQuarterBonus(
+                            request.getPosition(),
+                            request.getSalary(),
+                            request.getBonus(),
+                            request.getWorkDays()
+                    );
+                    response.setQuarterBonus(quarterBonus);
+                } catch (IllegalArgumentException e) {
+                    log.info("Quarter bonus not available: {}", e.getMessage());
+                }
+            }
+
         } catch (ValidationFailedException e) {
             response.setCode(Codes.FAILED);
             response.setErrorCode(ErrorCodes.VALIDATION_EXCEPTION);
